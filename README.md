@@ -11,13 +11,13 @@
 
 微信小程序的简单存储, 支持 TTL(time-to-live) 缓存自动过期
 
-## 安装
+## Installation
 
 ```
 npm install weapp-simple-storage --save
 ```
 
-## 使用方法
+## Example usage
 
 ```javascript
 import SimpleStorage from 'weapp-simple-storage';
@@ -25,13 +25,17 @@ import SimpleStorage from 'weapp-simple-storage';
 var simpleStorage = new SimpleStorage({
     name: '_weapp_simple_storage'
 });
+
 simpleStorage.set('key', {
     foo: 'bar'
 });
 simpleStorage.get('key');
+simpleStorage.has('key');
+simpleStorage.delete('key');
+simpleStorage.clear();
 ```
 
-## 配置项
+## options
 
 ### name
 
