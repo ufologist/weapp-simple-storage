@@ -117,20 +117,17 @@ class WeappSimpleStorage {
         });
     }
 
-    set(key, value, options) { // simpleStorage.get
+    set(key, value, options = {}) { // simpleStorage.get
         var oldValue = this._storage[key];
-        this._storage[key] = value;
 
-        if (typeof options.ttl !== 'undefined') {
-            var ttl = Date.now() + parseInt(options.ttl) ? parseInt(options.ttl) : 0;
-            this._storage[this._meta][key] = ttl;
-        }
+        this._storage[key] = value;
+        this.setTtl(key, options.ttl);
 
         this.onSet(key, value, oldValue)
     }
     get(key) { // simpleStorage.set
         var value = this._storage[key];
-        var ttl = this._storage[this._meta][key];
+        var ttl = this.getTtl(key);
 
         // 缓存是否过期
         if (typeof ttl !== 'undefined' && ttl < Date.now()) {
@@ -161,12 +158,15 @@ class WeappSimpleStorage {
         this.onClear();
     }
 
-    // setTtl(key, ttl) { // simpleStorage.setTTL
-
-    // }
-    // getTtl(key) { // simpleStorage.getTTL
-
-    // }
+    setTtl(key, ttl) { // simpleStorage.setTTL
+        if (typeof ttl !== 'undefined') {
+            ttl = Date.now() + parseInt(ttl) ? parseInt(ttl) : 0;
+            this._storage[this._meta][key] = ttl;
+        }
+    }
+    getTtl(key) { // simpleStorage.getTTL
+        return this._storage[this._meta][key];
+    }
 
     /**
      * 
