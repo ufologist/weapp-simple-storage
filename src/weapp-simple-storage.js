@@ -120,10 +120,29 @@ class WeappSimpleStorage {
     set(key, value, options) { // simpleStorage.get
         var oldValue = this._storage[key];
         this._storage[key] = value;
+
+        if (typeof options.ttl !== 'undefined') {
+            var ttl = Date.now() + parseInt(options.ttl) ? parseInt(options.ttl) : 0;
+            this._storage[this._meta][key] = ttl;
+        }
+
         this.onSet(key, value, oldValue)
     }
     get(key) { // simpleStorage.set
-        return this._storage[key];
+        var value = this._storage[key];
+        var ttl = this._storage[this._meta][key];
+
+        // 缓存是否过期
+        if (typeof ttl !== 'undefined' && ttl < Date.now()) {
+            var result = this.delete(key);
+            if (result) {
+                value = undefined;
+            } else {
+                this.logger.warn('删除过期缓存失败', key, ttl);
+            }
+        }
+
+        return value;
     }
     has(key) { // simpleStorage.hasKey
         return typeof this.get(key) != undefined;
