@@ -43,12 +43,19 @@ class WeappSimpleStorage {
         });
     }
 
+    /**
+     * 初始化默认的缓存数据
+     */
     _initStorage() {
         this._storage = {
             [this._meta]: this.getInitMeta()
         };
     }
 
+    /**
+     * 将缓存存储中的数据同步到内存中
+     * 后续所有的操作都走内存, 避免需要同步的操作缓存, 内存中的数据会异步写回到缓存存储中
+     */
     _syncStorage2Memory() {
         try {
             var storage = wx.getStorageSync(this._name);
@@ -64,7 +71,9 @@ class WeappSimpleStorage {
     }
 
     /**
-     * 将内存数据异步写入到缓存
+     * 将内存中的缓存数据异步写入到缓存存储中
+     * 
+     * @param {object} options wx.setStorage 的参数
      */
     _syncMemory2Storage(options) {
         wx.setStorage(extend({
@@ -84,6 +93,13 @@ class WeappSimpleStorage {
         };
     }
 
+    /**
+     * 当设置缓存时的事件
+     * 
+     * @param {string} key 
+     * @param {*} newValue 
+     * @param {*} oldValue 
+     */
     onSet(key, newValue, oldValue) {
         this._syncMemory2Storage({
             success: () => {
@@ -95,6 +111,11 @@ class WeappSimpleStorage {
         });
     }
 
+    /**
+     * 当删除缓存时的事件
+     * 
+     * @param {string} key 
+     */
     onDelete(key) {
         this._syncMemory2Storage({
             success: () => {
@@ -106,6 +127,9 @@ class WeappSimpleStorage {
         });
     }
 
+    /**
+     * 当清除缓存时的事件
+     */
     onClear() {
         this._syncMemory2Storage({
             success: () => {
@@ -117,6 +141,13 @@ class WeappSimpleStorage {
         });
     }
 
+    /**
+     * 设置某个缓存
+     * 
+     * @param {string} key 
+     * @param {*} value 
+     * @param {object} options 
+     */
     set(key, value, options = {}) { // simpleStorage.get
         var oldValue = this._storage[key];
 
@@ -125,6 +156,12 @@ class WeappSimpleStorage {
 
         this.onSet(key, value, oldValue)
     }
+    /**
+     * 获取某个缓存
+     * 
+     * @param {string} key
+     * @return {*}
+     */
     get(key) { // simpleStorage.set
         var value = this._storage[key];
         var ttl = this.getTtl(key);
@@ -141,11 +178,19 @@ class WeappSimpleStorage {
 
         return value;
     }
+    /**
+     * 是否存在某个缓存
+     * 
+     * @param {string} key
+     * @return {boolean}
+     */
     has(key) { // simpleStorage.hasKey
         return typeof this.get(key) != undefined;
     }
     /**
+     * 删除某个缓存
      * 
+     * @param {string} key
      * @return {boolean}
      */
     delete(key) { // simpleStorage.deleteKey
@@ -153,22 +198,38 @@ class WeappSimpleStorage {
         this.onDelete(key);
         return result;
     }
+    /**
+     * 清除所有缓存
+     */
     clear() { // simpleStorage.flush
         this._initStorage();
         this.onClear();
     }
 
+    /**
+     * 设置缓存的存活时间
+     * 
+     * @param {string} key 
+     * @param {number} ttl 缓存的存活时间(ms)
+     */
     setTtl(key, ttl) { // simpleStorage.setTTL
         if (typeof ttl !== 'undefined') {
             ttl = Date.now() + parseInt(ttl) ? parseInt(ttl) : 0;
             this._storage[this._meta][key] = ttl;
         }
     }
+    /**
+     * 获取缓存的存活时间(ms)
+     * 
+     * @param {string} key
+     * @return {number|undefined} 缓存的存活时间(ms)
+     */
     getTtl(key) { // simpleStorage.getTTL
         return this._storage[this._meta][key];
     }
 
     /**
+     * 获取缓存中的所有 key 值
      * 
      * @return {Array<string>}
      */
