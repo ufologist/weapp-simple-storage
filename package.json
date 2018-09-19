@@ -1,0 +1,29 @@
+{
+  "name": "weapp-simple-storage",
+  "version": "1.0.0",
+  "description": "微信小程序的简单存储, 支持 TTL(time-to-live) 缓存自动过期",
+  "main": "src/weapp-simple-storage.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ufologist/weapp-simple-storage.git"
+  },
+  "keywords": [
+    "weapp",
+    "simple",
+    "storage",
+    "ttl"
+  ],
+  "author": "ufologist",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ufologist/weapp-simple-storage/issues"
+  },
+  "homepage": "https://github.com/ufologist/weapp-simple-storage#readme",
+  "dependencies": {
+    "extend": "^3.0.2",
+    "simple-console-log-level": "^1.0.0"
+  }
+}
