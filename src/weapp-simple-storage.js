@@ -172,20 +172,11 @@ class WeappSimpleStorage {
             if (result) {
                 value = undefined;
             } else {
-                this.logger.warn('删除过期缓存失败', key, ttl);
+                this.logger.warn('删除过期的缓存失败', key, ttl);
             }
         }
 
         return value;
-    }
-    /**
-     * 是否存在某个缓存
-     * 
-     * @param {string} key
-     * @return {boolean}
-     */
-    has(key) { // simpleStorage.hasKey
-        return typeof this.get(key) != undefined;
     }
     /**
      * 删除某个缓存
@@ -205,17 +196,30 @@ class WeappSimpleStorage {
         this.initStorage();
         this.onClear();
     }
+    /**
+     * 是否存在某个缓存
+     * 
+     * @param {string} key
+     * @return {boolean}
+     */
+    has(key) { // simpleStorage.hasKey
+        return typeof this.get(key) !== 'undefined';
+    }
 
     /**
-     * 设置缓存的存活时间
+     * 设置缓存的存活时长(ms)
      * 
      * @param {string} key 
-     * @param {number} ttl 缓存的存活时间(ms)
+     * @param {number} ttl 缓存的存活时长(ms)
      */
     setTtl(key, ttl) { // simpleStorage.setTTL
         if (typeof ttl !== 'undefined') {
+            var oldTtl = this.getTtl(key);
+
             ttl = Date.now() + parseInt(ttl) ? parseInt(ttl) : 0;
             this.storage[this.meta][key] = ttl;
+
+            this.onSet(key, 'ttl:' + ttl, 'ttl:' + oldTtl);
         }
     }
     /**
