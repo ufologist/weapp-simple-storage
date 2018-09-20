@@ -103,10 +103,10 @@ class WeappSimpleStorage {
     onSet(key, newValue, oldValue) {
         this.syncMemory2Storage({
             success: () => {
-                this.logger.log('onSet success', key, newValue, oldValue);
+                this.logger.log('onSet success', key, newValue, '<-', oldValue);
             },
             fail: () => {
-                this.logger.warn('onSet fail', key, newValue, oldValue);
+                this.logger.warn('onSet fail', key, newValue, '<-', oldValue);
             }
         });
     }
@@ -154,7 +154,7 @@ class WeappSimpleStorage {
         this.storage[key] = value;
         this.setTtl(key, options.ttl);
 
-        this.onSet(key, value, oldValue)
+        this.onSet(key, value, oldValue);
     }
     /**
      * 获取某个缓存
@@ -164,15 +164,17 @@ class WeappSimpleStorage {
      */
     get(key) { // simpleStorage.set
         var value = this.storage[key];
-        var ttl = this.getTtl(key);
 
-        // 缓存是否过期
-        if (typeof ttl !== 'undefined' && ttl < Date.now()) {
-            var result = this.delete(key);
-            if (result) {
-                value = undefined;
-            } else {
-                this.logger.warn('删除过期的缓存失败', key, ttl);
+        // 有缓存数据再检查缓存数据是否过期
+        if (typeof value != 'undefined') {
+            var ttl = this.getTtl(key);
+            if (typeof ttl !== 'undefined' && ttl < Date.now()) {
+                var result = this.delete(key);
+                if (result) {
+                    value = undefined;
+                } else {
+                    this.logger.warn('删除过期的缓存失败', key, ttl);
+                }
             }
         }
 
@@ -185,8 +187,15 @@ class WeappSimpleStorage {
      * @return {boolean}
      */
     delete(key) { // simpleStorage.deleteKey
+        this.setTtl(key);
         var result = delete this.storage[key];
-        this.onDelete(key);
+
+        if (result) {
+            this.onDelete(key);
+        } else {
+            this.logger.warn('删除缓存失败', key);
+        }
+
         return result;
     }
     /**
@@ -207,19 +216,37 @@ class WeappSimpleStorage {
     }
 
     /**
+     * 获取缓存中的所有 key 值
+     * 
+     * @return {Array<string>}
+     */
+    keys() { // simpleStorage.index
+        return Object.keys(this.storage).filter((key) => {
+            return key !== this.meta;
+        });
+    }
+
+    /**
      * 设置缓存的存活时长(ms)
      * 
      * @param {string} key 
-     * @param {number} ttl 缓存的存活时长(ms)
+     * @param {undefined|number} ttl 缓存的存活时长(ms), 当 TTL 有值的时候设置 TTL, 没值的时候清空 TTL
      */
     setTtl(key, ttl) { // simpleStorage.setTTL
-        if (typeof ttl !== 'undefined') {
-            var oldTtl = this.getTtl(key);
+        var oldTtl = this.getTtl(key);
 
-            ttl = Date.now() + parseInt(ttl) ? parseInt(ttl) : 0;
-            this.storage[this.meta][key] = ttl;
+        if (ttl) {
+            ttl = Date.now() + (parseInt(ttl) ? parseInt(ttl) : 0);
+            this.storage[this.meta].ttl[key] = ttl;
 
             this.onSet(key, 'ttl:' + ttl, 'ttl:' + oldTtl);
+        } else {
+            var result = delete this.storage[this.meta].ttl[key];
+            if (result) {
+                this.onSet(key, 'ttl:' + ttl, 'ttl:' + oldTtl);
+            } else {
+                this.logger.warn('清除 TTL 失败', key);
+            }
         }
     }
     /**
@@ -229,18 +256,7 @@ class WeappSimpleStorage {
      * @return {number|undefined} 缓存的存活时间(ms)
      */
     getTtl(key) { // simpleStorage.getTTL
-        return this.storage[this.meta][key];
-    }
-
-    /**
-     * 获取缓存中的所有 key 值
-     * 
-     * @return {Array<string>}
-     */
-    keys() { // simpleStorage.index
-        return Object.keys(this.storage).filter((key) => {
-            return key !== this.meta;
-        });
+        return this.storage[this.meta].ttl[key];
     }
 }
 
