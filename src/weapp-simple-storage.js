@@ -26,29 +26,29 @@ class WeappSimpleStorage {
      *                 options.loggerLevel {string} 日志级别, 默认为: Logger.LEVEL_WARN 
      */
     constructor(options) {
-        this._options = extend(true, {}, WeappSimpleStorage.defaults, options);
+        this.options = extend(true, {}, WeappSimpleStorage.defaults, options);
 
-        this._name = this._options.name;
-        this._meta = '_meta_' + this._name;
+        this.name = this.options.name;
+        this.meta = '_meta_' + this.name;
 
-        this._storage = null;
-        this._initSuccess = false;
+        this.storage = null;
+        this.initSuccess = false;
 
-        this._initStorage();
-        this._syncStorage2Memory();
+        this.initStorage();
+        this.syncStorage2Memory();
 
         this.logger = new Logger({
-            level: this._options.loggerLevel,
-            prefix: `[${this._name}]`
+            level: this.options.loggerLevel,
+            prefix: `[${this.name}]`
         });
     }
 
     /**
      * 初始化默认的缓存数据
      */
-    _initStorage() {
-        this._storage = {
-            [this._meta]: this.getInitMeta()
+    initStorage() {
+        this.storage = {
+            [this.meta]: this.getInitMeta()
         };
     }
 
@@ -56,17 +56,17 @@ class WeappSimpleStorage {
      * 将缓存存储中的数据同步到内存中
      * 后续所有的操作都走内存, 避免需要同步的操作缓存, 内存中的数据会异步写回到缓存存储中
      */
-    _syncStorage2Memory() {
+    syncStorage2Memory() {
         try {
-            var storage = wx.getStorageSync(this._name);
+            var storage = wx.getStorageSync(this.name);
 
             if (storage) {
-                this._storage = storage;
+                this.storage = storage;
             }
 
-            this._initSuccess = true;
+            this.initSuccess = true;
         } catch (error) {
-            this.logger.error('WeappSimpleStorage 同步缓存数据失败', error)
+            this.logger.error('WeappSimpleStorage 将缓存存储中的数据同步到内存中失败', error)
         }
     }
 
@@ -75,10 +75,10 @@ class WeappSimpleStorage {
      * 
      * @param {object} options wx.setStorage 的参数
      */
-    _syncMemory2Storage(options) {
+    syncMemory2Storage(options) {
         wx.setStorage(extend({
-            key: this._name,
-            data: this._storage
+            key: this.name,
+            data: this.storage
         }, options));
     }
 
@@ -101,7 +101,7 @@ class WeappSimpleStorage {
      * @param {*} oldValue 
      */
     onSet(key, newValue, oldValue) {
-        this._syncMemory2Storage({
+        this.syncMemory2Storage({
             success: () => {
                 this.logger.log('onSet success', key, newValue, oldValue);
             },
@@ -117,7 +117,7 @@ class WeappSimpleStorage {
      * @param {string} key 
      */
     onDelete(key) {
-        this._syncMemory2Storage({
+        this.syncMemory2Storage({
             success: () => {
                 this.logger.log('onDelete success', key);
             },
@@ -131,7 +131,7 @@ class WeappSimpleStorage {
      * 当清除缓存时的事件
      */
     onClear() {
-        this._syncMemory2Storage({
+        this.syncMemory2Storage({
             success: () => {
                 this.logger.log('onClear success');
             },
@@ -149,9 +149,9 @@ class WeappSimpleStorage {
      * @param {object} options 
      */
     set(key, value, options = {}) { // simpleStorage.get
-        var oldValue = this._storage[key];
+        var oldValue = this.storage[key];
 
-        this._storage[key] = value;
+        this.storage[key] = value;
         this.setTtl(key, options.ttl);
 
         this.onSet(key, value, oldValue)
@@ -163,7 +163,7 @@ class WeappSimpleStorage {
      * @return {*}
      */
     get(key) { // simpleStorage.set
-        var value = this._storage[key];
+        var value = this.storage[key];
         var ttl = this.getTtl(key);
 
         // 缓存是否过期
@@ -194,7 +194,7 @@ class WeappSimpleStorage {
      * @return {boolean}
      */
     delete(key) { // simpleStorage.deleteKey
-        var result = delete this._storage[key];
+        var result = delete this.storage[key];
         this.onDelete(key);
         return result;
     }
@@ -202,7 +202,7 @@ class WeappSimpleStorage {
      * 清除所有缓存
      */
     clear() { // simpleStorage.flush
-        this._initStorage();
+        this.initStorage();
         this.onClear();
     }
 
@@ -215,7 +215,7 @@ class WeappSimpleStorage {
     setTtl(key, ttl) { // simpleStorage.setTTL
         if (typeof ttl !== 'undefined') {
             ttl = Date.now() + parseInt(ttl) ? parseInt(ttl) : 0;
-            this._storage[this._meta][key] = ttl;
+            this.storage[this.meta][key] = ttl;
         }
     }
     /**
@@ -225,7 +225,7 @@ class WeappSimpleStorage {
      * @return {number|undefined} 缓存的存活时间(ms)
      */
     getTtl(key) { // simpleStorage.getTTL
-        return this._storage[this._meta][key];
+        return this.storage[this.meta][key];
     }
 
     /**
@@ -234,8 +234,8 @@ class WeappSimpleStorage {
      * @return {Array<string>}
      */
     keys() { // simpleStorage.index
-        return Object.keys(this._storage).filter((key) => {
-            return key !== this._meta;
+        return Object.keys(this.storage).filter((key) => {
+            return key !== this.meta;
         });
     }
 }
