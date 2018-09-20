@@ -1,0 +1,23 @@
+{
+  "name": "weapp-simple-storage-test",
+  "version": "0.0.0",
+  "description": "weapp-simple-storage 测试用例",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "min dev"
+  },
+  "author": "ufologist",
+  "license": "MIT",
+  "dependencies": {
+    "extend": "^3.0.2",
+    "simple-console-log-level": "^1.0.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.2.6",
+    "babel-plugin-syntax-export-extensions": "^6.13.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-export-extensions": "^6.22.0",
+    "babel-preset-env": "^1.6.1"
+  }
+}

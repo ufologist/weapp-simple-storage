@@ -1,0 +1,90 @@
+<template>
+</template>
+<script>
+import SimpleStorage from '../../weapp-simple-storage.js';
+
+export default {
+    onLoad: function() {
+        this.testCurd();
+        this.testHasSimpleStorage();
+        this.testTtl();
+    },
+    testCurd: function() {
+        var key = 'test';
+        var value = {
+            a: 1
+        };
+
+        wx.clearStorageSync();
+        var simpleStorage = new SimpleStorage({
+            name: 'testCurd',
+            loggerLevel: 'log'
+        });
+
+        simpleStorage.set(key, value);
+
+        console.assert('写入缓存', simpleStorage.has(key));
+        console.assert('获取缓存数据', JSON.stringify(simpleStorage.get(key)) === JSON.stringify(value));
+
+        var keys = simpleStorage.keys();
+        console.assert(keys.length === 1);
+        console.assert(keys[0] === key);
+
+        simpleStorage.delete(key);
+        console.assert('删除缓存数据', simpleStorage.has(key) === false);
+
+        simpleStorage.clear();
+        console.assert(simpleStorage.keys().length === 0);
+    },
+    testHasSimpleStorage: function() {
+        var key = 'test';
+        var value = {
+            a: 1
+        };
+
+        var simpleStorage = new SimpleStorage({
+            name: 'testHasSimpleStorage',
+            loggerLevel: 'log'
+        });
+
+        if (simpleStorage.keys() !== 0) {
+            console.assert('获取已有的缓存数据', JSON.stringify(simpleStorage.get(key)) === JSON.stringify(value));
+        }
+
+        simpleStorage.set(key, value);
+
+        console.assert('写入缓存', simpleStorage.has(key));
+        console.assert('获取缓存数据', JSON.stringify(simpleStorage.get(key)) === JSON.stringify(value));
+    },
+    testTtl: function() {
+        var key = 'test';
+        var value = {
+            a: 1
+        };
+        var ttl = 1000;
+
+        wx.clearStorageSync();
+        var simpleStorage = new SimpleStorage({
+            name: 'testTtl',
+            loggerLevel: 'log'
+        });
+
+        var now = Date.now();
+        simpleStorage.setTtl(key, ttl);
+        console.assert('单独设置 TTL', now + ttl === simpleStorage.getTtl(key));
+
+        var now = Date.now();
+        simpleStorage.set(key, value, {
+            ttl: ttl
+        });
+        console.assert('写缓存的时候设置 TTL', now + ttl === simpleStorage.getTtl(key));
+
+        setTimeout(() => {
+            console.assert(JSON.stringify(simpleStorage.get(key)) === JSON.stringify(value));
+        }, ttl / 2);
+        setTimeout(() => {
+            console.assert(simpleStorage.has(key) === false);
+        }, ttl + 200);
+    }
+};
+</script>

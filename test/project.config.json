@@ -1,0 +1,16 @@
+{
+	"description": "weapp-simple-storage 测试用例",
+	"compileType": "miniprogram",
+	"libVersion": "1.9.0",
+	"appid": "wxe386a68c59e81a98",
+	"projectname": "weapp-simple-storage%20%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B",
+	"miniprogramRoot": "dist/",
+	"setting": {
+		"urlCheck": true,
+		"es6": true,
+		"postcss": true,
+		"minified": true,
+		"newFeature": true
+	},
+	"condition": {}
+}
