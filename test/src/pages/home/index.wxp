@@ -5,8 +5,8 @@ import SimpleStorage from '../../weapp-simple-storage.js';
 
 export default {
     onLoad: function() {
-        this.testCurd();
         this.testHasSimpleStorage();
+        this.testCurd();
         this.testTtl();
     },
     testCurd: function() {
