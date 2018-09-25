@@ -46,18 +46,21 @@ simpleStorage.clear();
   * 多张扩展表便于隔离数据和扩展
 
   缓存数据(主表)
+  
   | key(PK)   | value            |
   |-----------|------------------|
   | key1      | value1           |
   | key2      | value2           |
 
   元数据1(扩展表1)
+
   | key(FK)   | value            |
   |-----------|------------------|
   | key1      | meta1-value1     |
   | key2      | meta1-value2     |
 
   元数据2(扩展表2)
+
   | key(FK)   | value            |
   |-----------|------------------|
   | key1      | meta2-value1     |
