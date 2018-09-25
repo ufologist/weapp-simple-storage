@@ -1,6 +1,6 @@
 {
   "name": "weapp-simple-storage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "微信小程序的简单存储, 支持 TTL(time-to-live) 缓存自动过期",
   "main": "src/index.js",
   "scripts": {

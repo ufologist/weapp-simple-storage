@@ -160,6 +160,11 @@ class WeappSimpleStorage {
     set(key, value, options = {}) { // simpleStorage.get
         var oldValue = this.storage[key];
 
+        // clone 数据防止意外操作了内存中的缓存数据
+        if (typeof value !== 'undefined') {
+            value = JSON.parse(JSON.stringify(value));
+        }
+
         this.storage[key] = value;
 
         // [this, arguments, oldValue]
@@ -300,7 +305,8 @@ class WeappSimpleStorage {
 
         var result = true;
         if (typeof value !== 'undefined') {
-            this.storage[this.meta][name][key] = value;
+            // clone 数据防止意外操作了内存中的缓存数据
+            this.storage[this.meta][name][key] = JSON.parse(JSON.stringify(value));
         } else {
             result = delete this.storage[this.meta][name][key];
         }
