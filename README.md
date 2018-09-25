@@ -119,7 +119,7 @@ simpleStorage.clear();
 ## Plugin
 
 * [Plugin](https://github.com/ufologist/weapp-simple-storage/blob/master/src/plugin.js) 缓存的插件机制
-* [TtlPlugin](https://github.com/ufologist/weapp-simple-storage/blob/master/src/plugin/ttl-plugin.js) TTL 缓存机制的插件
+* [TtlPlugin](https://github.com/ufologist/weapp-simple-storage/blob/master/src/plugin/ttl-plugin.js) TTL 缓存机制的插件(内置)
 * [DumpPlugin](https://github.com/ufologist/weapp-simple-storage/blob/master/src/plugin/dump-plugin.js) 获取缓存数据的所有内容(包括元数据)
 * [TimePlugin](https://github.com/ufologist/weapp-simple-storage/blob/master/src/plugin/time-plugin.js) 记录缓存数据的新增和更新时间
 
