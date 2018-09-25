@@ -72,7 +72,7 @@ simpleStorage.clear();
 
 ## API
 
-### set(key: string, value: any, options: object): void
+### set(key: string, value: any, options: object)
 
 设置某个缓存
 
@@ -88,7 +88,7 @@ simpleStorage.clear();
 
 删除某个缓存
 
-### clear(): void
+### clear()
 
 清除所有缓存
 
@@ -108,13 +108,17 @@ simpleStorage.clear();
 
 是否有元数据
 
-### setTtl(key: string, ttl: number) 由 TtlPlugin 提供
+### setTtl(key: string, ttl: number) 由 `TtlPlugin` 提供
 
 设置缓存的存活时长(ms)
 
-### getTtl(key: string): number 由 TtlPlugin 提供
+### getTtl(key: string): number 由 `TtlPlugin` 提供
 
 获取缓存的存活时间(ms)
+
+### installPlugin(Plugin: Plugin, pluginOptions: object)
+
+安装插件: `SimpleStorage.installPlugin(Plugin);`
 
 ## Plugin
 
