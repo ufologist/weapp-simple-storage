@@ -39,7 +39,29 @@ simpleStorage.clear();
 
 ## 数据结构
 
-所有的缓存数据都存储在微信小程序缓存存储的一个 key 上面
+* 所有的缓存数据都存储在微信小程序缓存存储的一个 key 上面
+* 缓存的数据与元数据分开存储, 类似数据库表的设计思路: `主表 + 扩展表`
+  * 缓存的数据可以看做是主表数据
+  * 缓存的元数据可以看做是多张扩展表(关联表)数据(以 key 为外链)
+  * 多张扩展表便于隔离数据和扩展
+
+  缓存数据(主表)
+  | key(PK)   | value            |
+  |-----------|------------------|
+  | key1      | value1           |
+  | key2      | value2           |
+
+  元数据1(扩展表1)
+  | key(FK)   | value            |
+  |-----------|------------------|
+  | key1      | meta1-value1     |
+  | key2      | meta1-value2     |
+
+  元数据2(扩展表2)
+  | key(FK)   | value            |
+  |-----------|------------------|
+  | key1      | meta2-value1     |
+  | key2      | meta2-value2     |
 
 ```javascript
 {
@@ -59,6 +81,10 @@ simpleStorage.clear();
     }
 }
 ```
+
+实际的缓存数据示例
+
+![数据结构示例](https://github.com/ufologist/weapp-simple-storage/blob/master/test/snapshot.png?raw=true)
 
 ## options
 
