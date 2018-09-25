@@ -16,6 +16,8 @@ import Plugin from './plugin.js';
  * });
  * simpleStorage.set('key', {
  *     foo: 'bar'
+ * }, {
+ *     ttl: 60000
  * });
  * 
  * @see https://github.com/ZaDarkSide/simpleStorage
@@ -32,7 +34,7 @@ class WeappSimpleStorage {
         this.options = extend(true, {}, WeappSimpleStorage.defaults, options);
 
         /**
-         * 存储所有数据的 key 值的名称
+         * 存储所有缓存数据的 key 值的名称
          */
         this.name = this.options.name;
         /**
