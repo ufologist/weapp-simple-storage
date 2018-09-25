@@ -24,10 +24,13 @@ class Plugin {
      * @param {WeappSimpleStorage} simpleStorageInstance 
      * @param {*} key 
      * @param {*} value 
+     * @return {*}
      */
-    onGet(simpleStorageInstance, key, value) {}
-    // onDelete(simpleStorageInstance, key, newValue, options, oldValue) {}
-    // onClear(simpleStorageInstance, key, newValue, options, oldValue) {}
+    onGet(simpleStorageInstance, key, value) {
+        return value;
+    }
+    // onDelete(simpleStorageInstance, key) {}
+    // onClear(simpleStorageInstance) {}
 }
 Plugin.pluginName = 'plugin';
 

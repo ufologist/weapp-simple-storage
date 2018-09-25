@@ -19,6 +19,7 @@ import Plugin from './plugin.js';
  * });
  * 
  * @see https://github.com/ZaDarkSide/simpleStorage
+ * @see https://github.com/marcuswestin/store.js
  */
 class WeappSimpleStorage {
     /**
@@ -299,41 +300,6 @@ class WeappSimpleStorage {
         }
 
         return result;
-    }
-
-    /**
-     * 获取缓存数据的所有内容(包括元数据)
-     * 
-     * @param {string|undefined} key
-     * @return {*}
-     */
-    $getContent(key) {
-        var content = undefined;
-
-        if (key) {
-            var value = this.get(key);
-            if (value) {
-                content = value;
-                for (var name in this.storage[this.meta]) {
-                    if (this.hasMeta(name)) {
-                        content[`[${name}]`] = this.getMeta(name, key);
-                    }
-                }
-            }
-        } else {
-            content = extend(true, this.storage);
-            for (var key in content) {
-                for (var name in this.storage[this.meta]) {
-                    if (this.hasMeta(name)) {
-                        content[key][`[${name}]`] = this.getMeta(name, key);
-                    }
-                }
-            }
-
-            delete content[this.meta];
-        }
-
-        return content;
     }
 }
 
