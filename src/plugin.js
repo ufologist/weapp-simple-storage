@@ -5,7 +5,7 @@ class Plugin {
     /**
      * @abstract
      * 
-     * @param {obbject} pluginOptions 插件的配置项
+     * @param {object} pluginOptions 插件的配置项
      */
     constructor(pluginOptions) {}
     /**
@@ -29,8 +29,6 @@ class Plugin {
     onGet(simpleStorageInstance, key, value) {
         return value;
     }
-    // onDelete(simpleStorageInstance, key) {}
-    // onClear(simpleStorageInstance) {}
 }
 Plugin.pluginName = 'plugin';
 

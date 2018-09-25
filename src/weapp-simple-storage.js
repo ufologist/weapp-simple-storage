@@ -197,6 +197,11 @@ class WeappSimpleStorage {
             return pluginOnGetResult;
         }, value);
 
+        // clone 数据防止意外操作了内存中的缓存数据
+        if (typeof value !== 'undefined') {
+            value = JSON.parse(JSON.stringify(value));
+        }
+
         return value;
     }
     /**
@@ -259,6 +264,11 @@ class WeappSimpleStorage {
             metaValue = this.storage[this.meta][name][key];
         }
 
+        // clone 数据防止意外操作了内存中的缓存数据
+        if (typeof metaValue !== 'undefined') {
+            metaValue = JSON.parse(JSON.stringify(metaValue));
+        }
+
         return metaValue;
     }
     /**
@@ -294,7 +304,7 @@ class WeappSimpleStorage {
         }
 
         if (result) {
-            this.onSet(key, name + ':' + value, name + ':' + oldValue);
+            this.onSet(key, name + ':' + JSON.stringify(value), name + ':' + JSON.stringify(oldValue));
         } else {
             this.logger.warn('设置元数据失败', name, key, value);
         }
