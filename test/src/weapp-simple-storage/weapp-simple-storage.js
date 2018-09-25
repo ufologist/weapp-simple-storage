@@ -19,6 +19,7 @@ import Plugin from './plugin.js';
  * });
  * 
  * @see https://github.com/ZaDarkSide/simpleStorage
+ * @see https://github.com/marcuswestin/store.js
  */
 class WeappSimpleStorage {
     /**
@@ -196,6 +197,11 @@ class WeappSimpleStorage {
             return pluginOnGetResult;
         }, value);
 
+        // clone 数据防止意外操作了内存中的缓存数据
+        if (typeof value !== 'undefined') {
+            value = JSON.parse(JSON.stringify(value));
+        }
+
         return value;
     }
     /**
@@ -258,6 +264,11 @@ class WeappSimpleStorage {
             metaValue = this.storage[this.meta][name][key];
         }
 
+        // clone 数据防止意外操作了内存中的缓存数据
+        if (typeof metaValue !== 'undefined') {
+            metaValue = JSON.parse(JSON.stringify(metaValue));
+        }
+
         return metaValue;
     }
     /**
@@ -293,47 +304,12 @@ class WeappSimpleStorage {
         }
 
         if (result) {
-            this.onSet(key, name + ':' + value, name + ':' + oldValue);
+            this.onSet(key, name + ':' + JSON.stringify(value), name + ':' + JSON.stringify(oldValue));
         } else {
             this.logger.warn('设置元数据失败', name, key, value);
         }
 
         return result;
-    }
-
-    /**
-     * 获取缓存数据的所有内容(包括元数据)
-     * 
-     * @param {string|undefined} key
-     * @return {*}
-     */
-    $getContent(key) {
-        var content = undefined;
-
-        if (key) {
-            var value = this.get(key);
-            if (value) {
-                content = value;
-                for (var name in this.storage[this.meta]) {
-                    if (this.hasMeta(name)) {
-                        content[`[${name}]`] = this.getMeta(name, key);
-                    }
-                }
-            }
-        } else {
-            content = extend(true, this.storage);
-            for (var key in content) {
-                for (var name in this.storage[this.meta]) {
-                    if (this.hasMeta(name)) {
-                        content[key][`[${name}]`] = this.getMeta(name, key);
-                    }
-                }
-            }
-
-            delete content[this.meta];
-        }
-
-        return content;
     }
 }
 

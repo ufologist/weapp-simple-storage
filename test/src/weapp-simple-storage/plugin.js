@@ -5,7 +5,7 @@ class Plugin {
     /**
      * @abstract
      * 
-     * @param {obbject} pluginOptions 插件的配置项
+     * @param {object} pluginOptions 插件的配置项
      */
     constructor(pluginOptions) {}
     /**
@@ -24,10 +24,11 @@ class Plugin {
      * @param {WeappSimpleStorage} simpleStorageInstance 
      * @param {*} key 
      * @param {*} value 
+     * @return {*}
      */
-    onGet(simpleStorageInstance, key, value) {}
-    // onDelete(simpleStorageInstance, key, newValue, options, oldValue) {}
-    // onClear(simpleStorageInstance, key, newValue, options, oldValue) {}
+    onGet(simpleStorageInstance, key, value) {
+        return value;
+    }
 }
 Plugin.pluginName = 'plugin';
 

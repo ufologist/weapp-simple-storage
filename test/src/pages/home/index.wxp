@@ -2,12 +2,19 @@
 </template>
 <script>
 import SimpleStorage from '../../weapp-simple-storage/index.js';
+import DumpPlugin from '../../weapp-simple-storage/plugin/dump-plugin.js';
+import TimePlugin from '../../weapp-simple-storage/plugin/time-plugin.js';
+
+SimpleStorage.installPlugin(DumpPlugin);
+SimpleStorage.installPlugin(TimePlugin);
 
 export default {
     onLoad: function() {
         this.testHasSimpleStorage();
         this.testCurd();
         this.testTtl();
+        this.testDump();
+        this.testTime();
     },
     testCurd: function() {
         var key = 'test';
@@ -85,6 +92,51 @@ export default {
         setTimeout(() => {
             console.assert(simpleStorage.has(key) === false);
         }, ttl + 200);
+    },
+    testDump: function() {
+        var key = 'test';
+        var value = {
+            a: 1
+        };
+
+        wx.clearStorageSync();
+        var simpleStorage = new SimpleStorage({
+            name: 'testDump',
+            loggerLevel: 'log'
+        });
+
+        simpleStorage.set(key, value, {
+            ttl: 1000
+        });
+
+        console.assert(simpleStorage.dump('test').a === 1);
+        console.assert(simpleStorage.dump('test')['[ttl]']);
+
+        console.assert(simpleStorage.dump().test.a === 1);
+        console.assert(simpleStorage.dump().test['[ttl]']);
+    },
+    testTime: function() {
+        var key = 'test';
+        var value = {
+            a: 1
+        };
+
+        wx.clearStorageSync();
+        var simpleStorage = new SimpleStorage({
+            name: 'testTime',
+            loggerLevel: 'log'
+        });
+
+        simpleStorage.set(key, value);
+
+        console.assert(simpleStorage.dump('test').a === 1);
+        console.assert(simpleStorage.dump('test')['[time]'].createTime);
+
+        setTimeout(function() {
+            simpleStorage.set(key, value);
+            console.assert(simpleStorage.dump('test')['[time]'].createTime);
+            console.assert(simpleStorage.dump('test')['[time]'].updateTime);
+        }, 500);
     }
 };
 </script>
