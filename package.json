@@ -2,7 +2,7 @@
   "name": "weapp-simple-storage",
   "version": "1.0.0",
   "description": "微信小程序的简单存储, 支持 TTL(time-to-live) 缓存自动过期",
-  "main": "src/weapp-simple-storage.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

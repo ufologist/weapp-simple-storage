@@ -1,6 +1,8 @@
 import Logger from 'simple-console-log-level';
 import extend from 'extend';
 
+import Plugin from './plugin.js';
+
 /**
  * 微信小程序的简单存储
  * 
@@ -22,21 +24,36 @@ class WeappSimpleStorage {
     /**
      * 
      * @param {object} options
-     *                 options.name {string} name 存储的名称, 默认为: _weapp_simple_storage, 后续所有的存储都挂在这个 key 值上, 会自动追加上时间戳防止 key 冲突
+     *                 options.name {string} name 存储的名称, 默认为: _weapp_simple_storage, 后续所有的存储都挂在这个 key 值上
      *                 options.loggerLevel {string} 日志级别, 默认为: Logger.LEVEL_WARN 
      */
     constructor(options) {
         this.options = extend(true, {}, WeappSimpleStorage.defaults, options);
 
+        /**
+         * 存储所有数据的 key 值的名称
+         */
         this.name = this.options.name;
+        /**
+         * 存储所有元数据的 key 值的名称 
+         */
         this.meta = '_meta_' + this.name;
 
+        /**
+         * 同步到内存中的存储数据
+         */
         this.storage = null;
+        /**
+         * 初始化是否成功
+         */
         this.initSuccess = false;
 
         this.initStorage();
         this.syncStorage2Memory();
 
+        /**
+         * 日志
+         */
         this.logger = new Logger({
             level: this.options.loggerLevel,
             prefix: `[${this.name}]`
@@ -48,7 +65,7 @@ class WeappSimpleStorage {
      */
     initStorage() {
         this.storage = {
-            [this.meta]: this.getInitMeta()
+            [this.meta]: {}
         };
     }
 
@@ -80,17 +97,6 @@ class WeappSimpleStorage {
             key: this.name,
             data: this.storage
         }, options));
-    }
-
-    /**
-     * 获取元数据, 可以扩展这里实现更多功能
-     * 
-     * @return {object} 存储的元数据
-     */
-    getInitMeta() {
-        return {
-            ttl: {}
-        };
     }
 
     /**
@@ -152,9 +158,18 @@ class WeappSimpleStorage {
         var oldValue = this.storage[key];
 
         this.storage[key] = value;
-        this.setTtl(key, options.ttl);
 
-        this.onSet(key, value, oldValue);
+        // [this, arguments, oldValue]
+        var args = [this, key, value, options, oldValue];
+        WeappSimpleStorage.plugins.forEach((plugin) => {
+            try {
+                plugin.onSet.apply(plugin, args);
+            } catch (error) {
+                this.logger.warn('插件', plugin, 'onSet', error, plugin.constructor.pluginName || plugin.constructor.name, args);
+            }
+        });
+
+        this.onSet(key, this.storage[key], oldValue);
     }
     /**
      * 获取某个缓存
@@ -165,18 +180,21 @@ class WeappSimpleStorage {
     get(key) { // simpleStorage.set
         var value = this.storage[key];
 
-        // 有缓存数据再检查缓存数据是否过期
-        if (typeof value != 'undefined') {
-            var ttl = this.getTtl(key);
-            if (typeof ttl !== 'undefined' && ttl < Date.now()) {
-                var result = this.delete(key);
-                if (result) {
-                    value = undefined;
-                } else {
-                    this.logger.warn('删除过期的缓存失败', key, ttl);
-                }
+        // 串联所有插件, 将处理后的 value 一个接一个的传递下去
+        // plugin1 -onGet-> value1 -> plugin2 -onGet-> value2 -> plugin3 ....
+        value = WeappSimpleStorage.plugins.reduce((prev, plugin) => {
+            // [this, arguments, value]
+            var args = [this, key, prev];
+
+            var pluginOnGetResult = prev;
+            try {
+                pluginOnGetResult = plugin.onGet.apply(plugin, args);
+            } catch (error) {
+                this.logger.warn('插件', plugin, 'onGet', error, plugin.constructor.pluginName || plugin.constructor.name, args);
             }
-        }
+
+            return pluginOnGetResult;
+        }, value);
 
         return value;
     }
@@ -227,36 +245,95 @@ class WeappSimpleStorage {
     }
 
     /**
-     * 设置缓存的存活时长(ms)
+     * 获取元数据
      * 
+     * @param {string} name 元数据的名称
      * @param {string} key 
-     * @param {undefined|number} ttl 缓存的存活时长(ms), 当 TTL 有值的时候设置 TTL, 没值的时候清空 TTL
+     * @return {*} 元数据
      */
-    setTtl(key, ttl) { // simpleStorage.setTTL
-        var oldTtl = this.getTtl(key);
+    getMeta(name, key) {
+        var metaValue = undefined;
 
-        if (ttl) {
-            ttl = Date.now() + (parseInt(ttl) ? parseInt(ttl) : 0);
-            this.storage[this.meta].ttl[key] = ttl;
-
-            this.onSet(key, 'ttl:' + ttl, 'ttl:' + oldTtl);
-        } else {
-            var result = delete this.storage[this.meta].ttl[key];
-            if (result) {
-                this.onSet(key, 'ttl:' + ttl, 'ttl:' + oldTtl);
-            } else {
-                this.logger.warn('清除 TTL 失败', key);
-            }
+        if (this.hasMeta(name)) {
+            metaValue = this.storage[this.meta][name][key];
         }
+
+        return metaValue;
     }
     /**
-     * 获取缓存的存活时间(ms)
+     * 是否有元数据
      * 
-     * @param {string} key
-     * @return {number|undefined} 缓存的存活时间(ms)
+     * @param {string} name 
+     * @return {boolean}
      */
-    getTtl(key) { // simpleStorage.getTTL
-        return this.storage[this.meta].ttl[key];
+    hasMeta(name) {
+        return typeof this.storage[this.meta][name] !== 'undefined';
+    }
+    /**
+     * 设置元数据
+     * 
+     * @param {string} name 元数据的名称
+     * @param {string} key 
+     * @param {*} value 如果 value 不为 undefined 则设置元数据, 否则删除元数据
+     * @return {boolean}
+     */
+    setMeta(name, key, value) {
+        var oldValue = this.getMeta(name, key);
+
+        // 如果还没有该元数据, 则需要初始化元数据
+        if (!this.hasMeta(name)) {
+            this.storage[this.meta][name] = {};
+        }
+
+        var result = true;
+        if (typeof value !== 'undefined') {
+            this.storage[this.meta][name][key] = value;
+        } else {
+            result = delete this.storage[this.meta][name][key];
+        }
+
+        if (result) {
+            this.onSet(key, name + ':' + value, name + ':' + oldValue);
+        } else {
+            this.logger.warn('设置元数据失败', name, key, value);
+        }
+
+        return result;
+    }
+
+    /**
+     * 获取缓存数据的所有内容(包括元数据)
+     * 
+     * @param {string|undefined} key
+     * @return {*}
+     */
+    $getContent(key) {
+        var content = undefined;
+
+        if (key) {
+            var value = this.get(key);
+            if (value) {
+                content = value;
+                for (var name in this.storage[this.meta]) {
+                    if (this.hasMeta(name)) {
+                        content[`[${name}]`] = this.getMeta(name, key);
+                    }
+                }
+            }
+        } else {
+            content = extend(true, this.storage);
+            for (var key in content) {
+                for (var name in this.storage[this.meta]) {
+                    if (this.hasMeta(name)) {
+                        content[key][`[${name}]`] = this.getMeta(name, key);
+                    }
+                }
+            }
+
+            delete content[this.meta];
+        }
+
+        return content;
     }
 }
 
@@ -264,5 +341,20 @@ WeappSimpleStorage.defaults = {
     name: '_weapp_simple_storage',
     loggerLevel: Logger.LEVEL_WARN
 };
+
+/**
+ * 安装的插件
+ */
+WeappSimpleStorage.plugins = [];
+
+/**
+ * 安装插件
+ * 
+ * @param {Plugin} Plugin 
+ * @param {object} pluginOptions 
+ */
+WeappSimpleStorage.installPlugin = function(Plugin, pluginOptions) {
+    WeappSimpleStorage.plugins.push(new Plugin(pluginOptions));
+}
 
 export default WeappSimpleStorage;
